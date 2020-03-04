@@ -2217,6 +2217,7 @@ public class DeepLearningModel extends Model<DeepLearningModel,DeepLearningModel
         // Automatically set the distribution
         if (fromParms._distribution == DistributionFamily.AUTO) {
           // For classification, allow AUTO/bernoulli/multinomial with losses CrossEntropy/Quadratic/Huber/Absolute
+          if (nClasses == 1) toParms._distribution = DistributionFamily.gaussian;
           if (nClasses > 1) {
             toParms._distribution = nClasses == 2 ? DistributionFamily.bernoulli : DistributionFamily.multinomial;
           }
