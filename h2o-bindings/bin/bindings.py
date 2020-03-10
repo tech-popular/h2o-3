@@ -368,15 +368,15 @@ def schemas_map(add_generics=False):
             # Write the generic information about the base class
             schema = m[base]
             schema["generics"] = generics
-            my_generic_map = DictList()
+            generic_map = DictList()
             for name, schema_name in generics:
-                my_generic_map[schema_name] = name       
+                generic_map[schema_name] = name       
             generic_index = {geninfo[0]: i for i, geninfo in enumerate(generics)}
             mapped_fields = {}
             for field in schema["fields"]:
                 ftype = field["schema_name"]
-                if ftype in my_generic_map:
-                    gen_type = my_generic_map[ftype]
+                if ftype in generic_map:
+                    gen_type = generic_map[ftype]
                     if len(gen_type) > 1:
                         field["schema_name"] = gen_type[0]
                         mapped_fields[field["name"]] = generic_index[gen_type[0]]
@@ -386,7 +386,7 @@ def schemas_map(add_generics=False):
                         mapped_fields[field["name"]] = generic_index[gen_type[0]]
             assert len(mapped_fields) == len(generics), (
                 "Unable to find generic types %r in base class %s. Schema: %r" %
-                (my_generic_map, base, {f["name"]: f["schema_name"] for f in schema["fields"]}))
+                (generic_map, base, {f["name"]: f["schema_name"] for f in schema["fields"]}))
 
             # Find all the derived classes, and fill in their derived information
             for schema_name, schema in m.items():

@@ -13,6 +13,7 @@ import hex.genmodel.utils.DistributionFamily;
 import hex.tree.PlattScalingHelper;
 import hex.tree.xgboost.predict.*;
 import hex.tree.xgboost.util.PredictConfiguration;
+import hex.util.EffectiveParametersUtils;
 import ml.dmlc.xgboost4j.java.*;
 import water.*;
 import water.codegen.CodeGeneratorPipeline;
@@ -216,48 +217,18 @@ public class XGBoostModel extends Model<XGBoostModel, XGBoostModel.XGBoostParame
 
   public XGBoostModel(Key<XGBoostModel> selfKey, XGBoostParameters parms, XGBoostOutput output, Frame train, Frame valid) {
     super(selfKey,parms,output);
-    initDefaultParam();
+    initEffectiveParam();
     final DataInfo dinfo = makeDataInfo(train, valid, _parms, output.nclasses());
     DKV.put(dinfo);
     setDataInfoToOutput(dinfo);
     model_info = new XGBoostModelInfo(parms, dinfo);
   }
 
-  void initDefaultParam() {
-    if (_parms._stopping_metric == ScoreKeeper.StoppingMetric.AUTO) {
-      if (_parms._stopping_rounds == 0) {
-        _effective_parms._stopping_metric = null;
-      } else {
-        if (_output.isClassifier()) {
-          _effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.logloss;
-        } else if (_output.isAutoencoder()) {
-          _effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.MSE;
-        } else {
-          _effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.deviance;
-        }
-      }
-    }
-    if (_parms._categorical_encoding == Parameters.CategoricalEncodingScheme.AUTO) {
-      if (_output.nclasses() == 1)
-        _effective_parms._categorical_encoding = null;
-      else
-        _effective_parms._categorical_encoding = Parameters.CategoricalEncodingScheme.OneHotInternal;
-    }
-    if (_parms._fold_assignment == Model.Parameters.FoldAssignmentScheme.AUTO) {
-      if (_parms._nfolds > 0 && _parms._fold_column == null){
-        _effective_parms._fold_assignment = Parameters.FoldAssignmentScheme.Random;
-      } else {
-        _effective_parms._fold_assignment = null;
-      }
-    }
-    if (_parms._distribution == DistributionFamily.AUTO) {
-      if (_output.nclasses() == 1) {
-        _effective_parms._distribution = DistributionFamily.gaussian;}
-      if (_output.nclasses() == 2) {
-        _effective_parms._distribution = DistributionFamily.bernoulli;}
-      if (_output.nclasses() >= 3) {
-        _effective_parms._distribution = DistributionFamily.multinomial;}
-    }
+  void initEffectiveParam() {
+    EffectiveParametersUtils.initStoppingMetric(_parms, _effective_parms, _output.isClassifier(), _output.isAutoencoder());
+    EffectiveParametersUtils.initCategoricalEncoding(_parms, _effective_parms, _output.nclasses(), Parameters.CategoricalEncodingScheme.OneHotInternal);
+    EffectiveParametersUtils.initFoldAssignment(_parms, _effective_parms);
+    EffectiveParametersUtils.initDistribution(_parms, _effective_parms, _output.nclasses());
   }
   
   // useful for debugging

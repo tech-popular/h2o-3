@@ -4,6 +4,7 @@ import hex.*;
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters;
 import hex.deeplearning.DeepLearningModel.DeepLearningParameters.MissingValuesHandling;
 import hex.glm.GLMTask;
+import hex.util.EffectiveParametersUtils;
 import hex.util.LinearAlgebraUtils;
 import water.*;
 import water.exceptions.H2OIllegalArgumentException;
@@ -302,7 +303,7 @@ public class DeepLearning extends ModelBuilder<DeepLearningModel,DeepLearningMod
           if (cp != null) cp.unlock(_job);
         }
       }
-      initDefaultParam(cp);
+      initEffectiveParam(cp);
       trainModel(cp);
       for (Key k : removeMe) DKV.remove(k);
 
@@ -328,34 +329,11 @@ public class DeepLearning extends ModelBuilder<DeepLearningModel,DeepLearningMod
       }
     }
     
-    void initDefaultParam(DeepLearningModel deepLearningModel) {
+    void initEffectiveParam(DeepLearningModel deepLearningModel) {
       deepLearningModel._effective_parms._distribution = deepLearningModel._dist._family;
-      if (_parms._stopping_metric == ScoreKeeper.StoppingMetric.AUTO){
-        if (_parms._stopping_rounds == 0){
-          deepLearningModel._effective_parms._stopping_metric = null;
-        } else {
-          if (deepLearningModel._output.isClassifier()) {
-            deepLearningModel._effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.logloss;
-          } else if (!deepLearningModel.isSupervised()) {
-            deepLearningModel._effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.MSE;
-          } else {
-            deepLearningModel._effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.deviance;
-          }
-        }
-      }
-      if (_parms._categorical_encoding == Model.Parameters.CategoricalEncodingScheme.AUTO) {
-        if (deepLearningModel._output.nclasses() == 1)
-          deepLearningModel._effective_parms._categorical_encoding = null;
-        else
-          deepLearningModel._effective_parms._categorical_encoding = Model.Parameters.CategoricalEncodingScheme.OneHotInternal;
-      }
-      if (_parms._fold_assignment == Model.Parameters.FoldAssignmentScheme.AUTO) {
-        if (_parms._nfolds > 0 && _parms._fold_column == null){
-          deepLearningModel._effective_parms._fold_assignment = Model.Parameters.FoldAssignmentScheme.Random;
-        } else {
-          deepLearningModel._effective_parms._fold_assignment = null;
-        }
-      }
+      EffectiveParametersUtils.initStoppingMetric(_parms, deepLearningModel._effective_parms, deepLearningModel._output.isClassifier(), deepLearningModel.isSupervised());
+      EffectiveParametersUtils.initCategoricalEncoding(_parms, deepLearningModel._effective_parms, deepLearningModel._output.nclasses(), Model.Parameters.CategoricalEncodingScheme.OneHotInternal);
+      EffectiveParametersUtils.initFoldAssignment(_parms, deepLearningModel._effective_parms);
     }
 
 

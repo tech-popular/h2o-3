@@ -1,9 +1,8 @@
 package hex.tree.drf;
 
-import hex.Model;
-import hex.ScoreKeeper;
 import hex.tree.SharedTreeModel;
 import hex.tree.SharedTreeModelWithContributions;
+import hex.util.EffectiveParametersUtils;
 import water.Key;
 import water.fvec.NewChunk;
 import water.util.MathUtils;
@@ -32,39 +31,14 @@ public class DRFModel extends SharedTreeModelWithContributions<DRFModel, DRFMode
 
   public DRFModel(Key<DRFModel> selfKey, DRFParameters parms, DRFOutput output ) {
     super(selfKey, parms, output);
-    initDefaultParam();
+    initEffectiveParam();
   }
 
-  void initDefaultParam() {
-    if (_parms._stopping_metric == ScoreKeeper.StoppingMetric.AUTO) {
-      if (_parms._stopping_rounds == 0) {
-        _effective_parms._stopping_metric = null;
-      } else {
-        if (_output.isClassifier()) {
-          _effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.logloss;
-        } else if (_output.isAutoencoder()) {
-          _effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.MSE;
-        } else {
-          _effective_parms._stopping_metric = ScoreKeeper.StoppingMetric.deviance;
-        }
-      }
-    }
-    if (_parms._categorical_encoding == Parameters.CategoricalEncodingScheme.AUTO) {
-      if (_output.nclasses() == 1)
-        _effective_parms._categorical_encoding = null;
-      else
-        _effective_parms._categorical_encoding = Parameters.CategoricalEncodingScheme.Enum;
-    }
-    if (_parms._fold_assignment == Model.Parameters.FoldAssignmentScheme.AUTO) {
-      if (_parms._nfolds > 0 && _parms._fold_column == null){
-        _effective_parms._fold_assignment = Parameters.FoldAssignmentScheme.Random;
-      } else {
-        _effective_parms._fold_assignment = null;
-      }
-    }
-    if (_parms._histogram_type == SharedTreeModel.SharedTreeParameters.HistogramType.AUTO) {
-      _effective_parms._histogram_type = SharedTreeModel.SharedTreeParameters.HistogramType.UniformAdaptive;
-    }
+  void initEffectiveParam() {
+    EffectiveParametersUtils.initStoppingMetric(_parms, _effective_parms, _output.isClassifier(), _output.isAutoencoder());
+    EffectiveParametersUtils.initCategoricalEncoding(_parms, _effective_parms, _output.nclasses(), Parameters.CategoricalEncodingScheme.Enum);
+    EffectiveParametersUtils.initFoldAssignment(_parms, _effective_parms);
+    EffectiveParametersUtils.initHistogramType(_parms, _effective_parms);
   }
 
   @Override

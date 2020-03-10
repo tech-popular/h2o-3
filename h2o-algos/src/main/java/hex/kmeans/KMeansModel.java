@@ -2,6 +2,7 @@ package hex.kmeans;
 
 import hex.*;
 import hex.genmodel.IClusteringModel;
+import hex.util.EffectiveParametersUtils;
 import hex.util.LinearAlgebraUtils;
 import water.DKV;
 import water.Job;
@@ -69,17 +70,11 @@ public class KMeansModel extends ClusteringModel<KMeansModel,KMeansModel.KMeansP
 
   public KMeansModel(Key selfKey, KMeansParameters parms, KMeansOutput output) { 
     super(selfKey,parms,output);
-    initDefaultParam();
+    initEffectiveParam();
   }
 
-  void initDefaultParam() {
-    if (_parms._fold_assignment == Model.Parameters.FoldAssignmentScheme.AUTO) {
-      if (_parms._nfolds > 0 && _parms._fold_column == null){
-        _effective_parms._fold_assignment = Parameters.FoldAssignmentScheme.Random;
-      } else {
-        _effective_parms._fold_assignment = null;
-      }
-    }
+  void initEffectiveParam() {
+    EffectiveParametersUtils.initFoldAssignment(_parms, _effective_parms);
   }
 
   @Override public ModelMetrics.MetricBuilder makeMetricBuilder(String[] domain) {

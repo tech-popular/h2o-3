@@ -1,6 +1,7 @@
 package hex.kmeans;
 
 import hex.*;
+import hex.util.EffectiveParametersUtils;
 import hex.util.LinearAlgebraUtils;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -289,12 +290,7 @@ public class KMeans extends ClusteringModelBuilder<KMeansModel,KMeansModel.KMean
         if( centers==null ) return; // Stopped/cancelled during center-finding
         boolean work_unit_iter = !_parms._estimate_k;
         boolean constrained = _parms._cluster_size_constraints != null;
-        if (_parms._categorical_encoding == Model.Parameters.CategoricalEncodingScheme.AUTO) {
-          if (model._output._categorical_column_count == 0)
-            model._effective_parms._categorical_encoding = null;
-          else
-            model._effective_parms._categorical_encoding = Model.Parameters.CategoricalEncodingScheme.Enum;
-        }
+        EffectiveParametersUtils.initCategoricalEncoding(_parms, model._effective_parms, model._output._categorical_column_count + 1, Model.Parameters.CategoricalEncodingScheme.Enum);
         
         // ---
         // Run the main KMeans Clustering loop
