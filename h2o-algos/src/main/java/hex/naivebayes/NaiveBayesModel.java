@@ -60,6 +60,9 @@ public class NaiveBayesModel extends Model<NaiveBayesModel,NaiveBayesModel.Naive
   
   void initEffectiveParam() {
     EffectiveParametersUtils.initFoldAssignment(_parms, _effective_parms);
+    _effective_parms._stopping_metric = null;
+    _effective_parms._distribution = null;
+    _effective_parms._categorical_encoding = null;
   }
 
   public ModelSchemaV3 schema() {

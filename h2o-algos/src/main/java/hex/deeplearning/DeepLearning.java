@@ -305,6 +305,7 @@ public class DeepLearning extends ModelBuilder<DeepLearningModel,DeepLearningMod
       }
       initEffectiveParam(cp);
       trainModel(cp);
+      assertEffectiveParameters(cp._effective_parms);
       for (Key k : removeMe) DKV.remove(k);
 
       // clean up, but don't delete weights and biases if user asked for export

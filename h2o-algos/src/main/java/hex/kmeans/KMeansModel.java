@@ -75,6 +75,8 @@ public class KMeansModel extends ClusteringModel<KMeansModel,KMeansModel.KMeansP
 
   void initEffectiveParam() {
     EffectiveParametersUtils.initFoldAssignment(_parms, _effective_parms);
+    _effective_parms._distribution = null;
+    _effective_parms._stopping_metric = null;
   }
 
   @Override public ModelMetrics.MetricBuilder makeMetricBuilder(String[] domain) {

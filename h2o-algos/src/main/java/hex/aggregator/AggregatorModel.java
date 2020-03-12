@@ -58,8 +58,15 @@ public class AggregatorModel extends Model<AggregatorModel,AggregatorModel.Aggre
 
   public AggregatorModel(Key selfKey, AggregatorParameters parms, AggregatorOutput output) { 
     super(selfKey,parms,output);
+    initEffectiveParam();
   }
 
+  void initEffectiveParam() {
+    _effective_parms._fold_assignment = null;
+    _effective_parms._stopping_metric = null;
+    _effective_parms._distribution = null;
+  }
+  
   @Override
   protected Frame predictScoreImpl(Frame orig, Frame adaptedFr, String destination_key, final Job j, boolean computeMetrics, CFuncRef customMetricFunc) {
     return null;

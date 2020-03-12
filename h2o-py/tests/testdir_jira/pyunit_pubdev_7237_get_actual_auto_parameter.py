@@ -187,6 +187,7 @@ def test_set_auto_parameters_to_default_values():
     assert rf1.logloss() == rf2.logloss()
     assert rf1.effective_params['distribution'] == rf2.actual_params['distribution']
     assert rf1.effective_params['categorical_encoding'] == rf2.effective_params['categorical_encoding']
+    assert rf1.effective_params['fold_assignment'] == None
 
     rf1 = H2ORandomForestEstimator(ntrees=100, distribution="bernoulli", min_rows=10, max_depth=5, weights_column="Weights", 
                                    nfolds = 5, calibrate_model=True, calibration_frame=calib, seed = 1234)

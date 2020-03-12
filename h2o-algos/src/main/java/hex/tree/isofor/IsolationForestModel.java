@@ -70,6 +70,8 @@ public class IsolationForestModel extends SharedTreeModel<IsolationForestModel, 
     if (_parms._categorical_encoding == Parameters.CategoricalEncodingScheme.AUTO) {
         _effective_parms._categorical_encoding = Parameters.CategoricalEncodingScheme.Enum;
     }
+    _effective_parms._fold_assignment = null;
+    _effective_parms._histogram_type = null;
   }
 
   @Override

@@ -13,6 +13,7 @@ import water.udf.CFuncRef;
 import water.util.*;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -262,6 +263,20 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
     }
 
     public abstract void computeImpl();
+  }
+
+  public void assertEffectiveParameters(Model.Parameters effectiveParameters){
+    try {
+      for (Field field : effectiveParameters.getClass().getFields()) {
+        Class type = field.getType();
+        Object value = field.get(effectiveParameters);
+        if (value != null/* && "AUTO".equals(value.toString())*/){
+          assert(!"AUTO".equals(value.toString())) : "FAIL: found AUTO value in effective parameters: " + field.getName();
+        }
+      }
+    } catch (IllegalAccessException e) {
+      e.printStackTrace();
+    }
   }
 
   private void setFinalState() {

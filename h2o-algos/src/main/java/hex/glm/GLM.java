@@ -1628,6 +1628,7 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
     }
     private void fitModel() {
       Solver solver = (_parms._solver == Solver.AUTO) ? defaultSolver() : _parms._solver;
+      _model._effective_parms._solver = _parms._solver;
       if (_parms._HGLM) {
         fitHGLM();
       } else {
@@ -2160,6 +2161,7 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
           sm.beta[sm.beta.length-1] += _iceptAdjust;
         _model.update(_job._key);
       }
+      assertEffectiveParameters(_model._effective_parms);
       doCleanup();
     }
 

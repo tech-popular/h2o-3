@@ -342,6 +342,7 @@ public abstract class SharedTree<
         initializeModelSpecifics();
         resumeFromCheckpoint(SharedTree.this);
         scoreAndBuildTrees(doOOBScoring());
+        assertEffectiveParameters(_model._effective_parms);
 
       } finally {
         if( _model!=null ) _model.unlock(_job);

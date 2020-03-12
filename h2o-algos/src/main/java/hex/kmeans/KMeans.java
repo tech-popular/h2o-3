@@ -435,6 +435,7 @@ public class KMeans extends ClusteringModelBuilder<KMeansModel,KMeansModel.KMean
         }
         model._parms._fold_column = fold_column;
         model.update(_job); // Update model in K/V store
+        assertEffectiveParameters(model._effective_parms);  
       } finally {
         if( model != null ) model.unlock(_job);
         DKV.remove(bestOutputKey);
