@@ -3,8 +3,6 @@ package hex.tree;
 import hex.*;
 import hex.genmodel.GenModel;
 import hex.genmodel.utils.DistributionFamily;
-import hex.glm.GLM;
-import hex.glm.GLMModel;
 import hex.quantile.Quantile;
 import hex.quantile.QuantileModel;
 import hex.util.CheckpointUtils;
@@ -342,7 +340,7 @@ public abstract class SharedTree<
         initializeModelSpecifics();
         resumeFromCheckpoint(SharedTree.this);
         scoreAndBuildTrees(doOOBScoring());
-        assertEffectiveParameters(_model._effective_parms);
+        checkEffectiveParmsDoesNotContainAuto(_model._effective_parms);
 
       } finally {
         if( _model!=null ) _model.unlock(_job);

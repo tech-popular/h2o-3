@@ -2161,7 +2161,7 @@ public class GLM extends ModelBuilder<GLMModel,GLMParameters,GLMOutput> {
           sm.beta[sm.beta.length-1] += _iceptAdjust;
         _model.update(_job._key);
       }
-      assertEffectiveParameters(_model._effective_parms);
+      checkEffectiveParmsDoesNotContainAuto(_model._effective_parms);
       doCleanup();
     }
 

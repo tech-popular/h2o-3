@@ -380,7 +380,7 @@ public class XGBoost extends ModelBuilder<XGBoostModel,XGBoostModel.XGBoostParam
           XGBoostUpdateTask nullModelTask = new XGBoostUpdateTask(setupTask, 0).run();
           BoosterProvider boosterProvider = new BoosterProvider(model.model_info(), featureMapFile, nullModelTask);
           scoreAndBuildTrees(setupTask, boosterProvider, model);
-          assertEffectiveParameters(model._effective_parms);
+          checkEffectiveParmsDoesNotContainAuto(model._effective_parms);
         } finally {
           XGBoostCleanupTask.cleanUp(setupTask);
           stopRabitTracker(rt);
