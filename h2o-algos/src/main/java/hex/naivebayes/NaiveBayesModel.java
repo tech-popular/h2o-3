@@ -55,10 +55,10 @@ public class NaiveBayesModel extends Model<NaiveBayesModel,NaiveBayesModel.Naive
 
   public NaiveBayesModel(Key selfKey, NaiveBayesParameters parms, NaiveBayesOutput output) { 
     super(selfKey,parms,output);
-    initEffectiveParam();
   }
   
-  void initEffectiveParam() {
+  @Override
+  public void initEffectiveParam() {
     EffectiveParametersUtils.initFoldAssignment(_parms, _effective_parms);
     _effective_parms._stopping_metric = null;
     _effective_parms._distribution = null;
