@@ -23,7 +23,9 @@ public abstract class ModelingSteps extends Iced<ModelingSteps> {
     }
 
     Optional<ModelingStep> getStep(String id) {
-        return Stream.of(getAllSteps())
+        // We don't want to use dummy steps anywhere but in test so they are not included in getAllSteps
+        ModelingStep[] allSteps = ArrayUtils.append(getAllSteps(), getDummySteps());
+        return Stream.of(allSteps)
                 .filter(step -> step._id.equals(id))
                 .findFirst();
     }
@@ -58,7 +60,6 @@ public abstract class ModelingSteps extends Iced<ModelingSteps> {
         ModelingStep[] all = new ModelingStep[0];  // create a fresh array to avoid type issues in arraycopy
         all = ArrayUtils.append(all, getDefaultModels());
         all = ArrayUtils.append(all, getGrids());
-        all = ArrayUtils.append(all, getDummySteps());
         return all;
     }
 

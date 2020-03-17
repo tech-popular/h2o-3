@@ -308,7 +308,14 @@ def test_stacked_ensembles_are_trained_after_timeout():
     print("Check that Stacked Ensembles are still trained after timeout")
     max_runtime_secs = 20
     ds = import_dataset()
-    aml = H2OAutoML(project_name="py_aml_SE_after_timeout", seed=1, max_runtime_secs=max_runtime_secs, exclude_algos=['XGBoost', 'DeepLearning'])
+    aml = H2OAutoML(
+        project_name="py_aml_SE_after_timeout",
+        seed=1,
+        max_runtime_secs=max_runtime_secs,
+        modeling_plan=[dict(name="DRF"), dict(name="GBM"),
+                       dict(name="GLM", steps=[dict(id="def_1"), dict(id="dummy_sleep", weight=200)]),
+                       dict(name="StackedEnsemble")]
+    )
     start = time.time()
     aml.train(y=ds['target'], training_frame=ds['train'])
     end = time.time()
