@@ -1365,7 +1365,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
       Model teModel = DKV.getGet(getTEModelKey());
       if (teModel != null) {
         if (train() != null) {
-          Frame trainEncoded = FrameUtils.applyTargetEncoder(teModel, train());
+          Frame trainEncoded = FrameUtils.applyTargetEncoder(teModel, train(), _parms._is_cv_model);
           setTrain(trainEncoded);
           _toDelete.put(trainEncoded._key, Arrays.toString(Thread.currentThread().getStackTrace()));
         }
@@ -1381,7 +1381,7 @@ abstract public class ModelBuilder<M extends Model<M,P,O>, P extends Model.Param
       if (_valid != null) {
         Frame encodedVa = null;
         if (teModel != null) {
-          encodedVa = FrameUtils.applyTargetEncoder(teModel, va);
+          encodedVa = FrameUtils.applyTargetEncoder(teModel, va, _parms._is_cv_model);
           _toDelete.put(encodedVa._key, Arrays.toString(Thread.currentThread().getStackTrace()));
         } else {
           encodedVa = va;
