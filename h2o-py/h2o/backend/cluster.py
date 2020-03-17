@@ -257,6 +257,51 @@ class H2OCluster(object):
                     table[i].append(node[k])
             H2ODisplay(table=table, header=header)
 
+    def get_status(self, detailed=False):
+        """
+       Returns table with current cluster status information.
+
+       :param detailed: if True, then also print detailed information about each node.
+       """
+        if self._retrieved_at + self.REFRESH_INTERVAL < time.time():
+            # Info is stale, need to refresh
+            new_info = h2o.api("GET /3/Cloud")
+            self._fill_from_h2ocluster(new_info)
+        ncpus = sum(node["num_cpus"] for node in self.nodes)
+        allowed_cpus = sum(node["cpus_allowed"] for node in self.nodes)
+        free_mem = sum(node["free_mem"] for node in self.nodes)
+        unhealthy_nodes = sum(not node["healthy"] for node in self.nodes)
+        status = "locked" if self.locked else "accepting new members"
+        if unhealthy_nodes == 0:
+            status += ", healthy"
+        else:
+            status += ", %d nodes are not healthy" % unhealthy_nodes
+        api_extensions = self.list_api_extensions()
+        
+        keys = ["H2O_cluster_uptime", "H2O_cluster_timezone", "H2O_data_parsing_timezone", "H2O_cluster_version", "H2O_cluster_version_age",
+                    "H2O_cluster_name","H2O_cluster_total_nodes", "H2O_cluster_free_memory", "H2O_cluster_total_cores",
+                    "H2O_cluster_allowed_cores","H2O_cluster_status","H2O_connection_url", "H2O_connection_proxy", "H2O_internal_security",
+                    "H2O_API_Extensions", "Python_version"]
+        values = [get_human_readable_time(self.cloud_uptime_millis), self.cloud_internal_timezone, self.datafile_parser_timezone,
+                    self.version, "{} {}".format(self.build_age, ("!!!" if self.build_too_old else "")), self.cloud_name,
+                    self.cloud_size, get_human_readable_bytes(free_mem), ncpus, allowed_cpus, status, h2o.connection().base_url,
+                    [h2o.connection().proxy], self.internal_security_enabled, ', '.join(api_extensions), "%d.%d.%d %s" % tuple(sys.version_info[:4])]
+        table = [[k] for k in keys]
+        for i, k in enumerate(keys):
+            table[i].append(values[i])
+        
+        if detailed:
+            keys = ["h2o", "healthy", "last_ping", "num_cpus", "sys_load", "mem_value_size", "free_mem", "pojo_mem",
+                    "swap_mem", "free_disk", "max_disk", "pid", "num_keys", "tcps_active", "open_fds", "rpcs_active"]
+            all_nodes_table = ["Node %d" % (i + 1) for i in range(len(self.nodes))]
+            node_table = [[k] for k in keys]
+            for j, node in enumerate(self.nodes):
+                for i, k in enumerate(keys):
+                    node_table[i].append(node[k])
+                all_nodes_table[j] = [all_nodes_table[j], node_table]
+            table = [table, all_nodes_table]
+        
+        return table
 
     def network_test(self):
         """Test network connectivity."""
