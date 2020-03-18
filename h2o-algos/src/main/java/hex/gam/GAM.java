@@ -194,7 +194,11 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
       try {
         _job.update(0, "Adding GAM columns to training dataset...");
         Frame newTrain = rebalance(adaptTrain(), false, _result+".temporary.train"); // add and store gam cols without centering
-        dinfo = new DataInfo(newTrain.clone(), _valid, 1, _parms._use_all_factor_levels || _parms._lambda_search, DataInfo.TransformType.NONE, DataInfo.TransformType.NONE,
+        newTFrame = _centerGAM?new Frame(buildGamFrameCenter(_parms._gam_X.length, _gamFrameKeysCenter, _parms.train(),
+                _parms._response_column, _parms.train().numCols(), _parms.train().names())):new Frame(dinfo._adaptedFrame);  // get frames with correct predictors and spline functions
+        DKV.put(newTFrame); // This one will cause deleted vectors if add to Scope.track
+
+        dinfo = new DataInfo(newTFrame.clone(), _valid, 1, _parms._use_all_factor_levels || _parms._lambda_search, DataInfo.TransformType.NONE, DataInfo.TransformType.NONE,
                 _parms.missingValuesHandling() == GLMParameters.MissingValuesHandling.Skip,
                 _parms.missingValuesHandling() == GLMParameters.MissingValuesHandling.MeanImputation || _parms.missingValuesHandling() == GLMParameters.MissingValuesHandling.PlugValues,
                 _parms.makeImputer(),
@@ -202,9 +206,6 @@ public class GAM extends ModelBuilder<GAMModel, GAMModel.GAMParameters, GAMModel
         DKV.put(dinfo._key, dinfo);
         model = new GAMModel(dest(), _parms, new GAMModel.GAMModelOutput(GAM.this, dinfo._adaptedFrame, dinfo));
         model.delete_and_lock(_job);
-        newTFrame = _centerGAM?new Frame(buildGamFrameCenter(_parms._gam_X.length, _gamFrameKeysCenter, _parms.train(), 
-                _parms._response_column, _parms.train().numCols(), _parms.train().names())):new Frame(dinfo._adaptedFrame);  // get frames with correct predictors and spline functions
-        DKV.put(newTFrame); // This one will cause deleted vectors if add to Scope.track
         if (_parms._saveGamCols) {  // save gam column keys
           gamColsFrame = saveGAMFrames(newTrain);
           DKV.put(gamColsFrame);  // do not Scope.track this, will cause null frame
