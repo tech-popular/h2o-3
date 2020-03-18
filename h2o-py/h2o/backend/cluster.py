@@ -4,6 +4,7 @@ from __future__ import division, print_function, absolute_import, unicode_litera
 
 import sys
 import time
+import json
 
 import h2o
 from h2o.exceptions import H2OConnectionError, H2OServerError
@@ -11,7 +12,7 @@ from h2o.display import H2ODisplay
 from h2o.utils.compatibility import *  # NOQA
 from h2o.utils.typechecks import assert_is_type
 from h2o.utils.shared_utils import get_human_readable_bytes, get_human_readable_time
-
+from h2o.two_dim_table import H2OTwoDimTable
 
 
 class H2OCluster(object):
@@ -257,12 +258,10 @@ class H2OCluster(object):
                     table[i].append(node[k])
             H2ODisplay(table=table, header=header)
 
-    def get_status(self, detailed=False):
+    def get_status(self):
         """
-       Returns table with current cluster status information.
-
-       :param detailed: if True, then also print detailed information about each node.
-       """
+        Returns H2OTwoDimTable with current cluster status information.
+        """
         if self._retrieved_at + self.REFRESH_INTERVAL < time.time():
             # Info is stale, need to refresh
             new_info = h2o.api("GET /3/Cloud")
@@ -277,7 +276,6 @@ class H2OCluster(object):
         else:
             status += ", %d nodes are not healthy" % unhealthy_nodes
         api_extensions = self.list_api_extensions()
-        
         keys = ["H2O_cluster_uptime", "H2O_cluster_timezone", "H2O_data_parsing_timezone", "H2O_cluster_version", "H2O_cluster_version_age",
                     "H2O_cluster_name","H2O_cluster_total_nodes", "H2O_cluster_free_memory", "H2O_cluster_total_cores",
                     "H2O_cluster_allowed_cores","H2O_cluster_status","H2O_connection_url", "H2O_connection_proxy", "H2O_internal_security",
@@ -285,22 +283,27 @@ class H2OCluster(object):
         values = [get_human_readable_time(self.cloud_uptime_millis), self.cloud_internal_timezone, self.datafile_parser_timezone,
                     self.version, "{} {}".format(self.build_age, ("!!!" if self.build_too_old else "")), self.cloud_name,
                     self.cloud_size, get_human_readable_bytes(free_mem), ncpus, allowed_cpus, status, h2o.connection().base_url,
-                    [h2o.connection().proxy], self.internal_security_enabled, ', '.join(api_extensions), "%d.%d.%d %s" % tuple(sys.version_info[:4])]
-        table = [[k] for k in keys]
-        for i, k in enumerate(keys):
-            table[i].append(values[i])
-        
-        if detailed:
-            keys = ["h2o", "healthy", "last_ping", "num_cpus", "sys_load", "mem_value_size", "free_mem", "pojo_mem",
-                    "swap_mem", "free_disk", "max_disk", "pid", "num_keys", "tcps_active", "open_fds", "rpcs_active"]
-            all_nodes_table = ["Node %d" % (i + 1) for i in range(len(self.nodes))]
-            node_table = [[k] for k in keys]
-            for j, node in enumerate(self.nodes):
-                for i, k in enumerate(keys):
-                    node_table[i].append(node[k])
-                all_nodes_table[j] = [all_nodes_table[j], node_table]
-            table = [table, all_nodes_table]
-        
+                  json.dumps(h2o.connection().proxy), self.internal_security_enabled, ', '.join(api_extensions), "%d.%d.%d %s" % tuple(sys.version_info[:4])]
+        table = H2OTwoDimTable(cell_values=[values], col_header=keys)
+        return table
+
+    def get_status_details(self):
+        """
+        Returns H2OTwoDimTable with detailed current status information about each node.
+        """
+        if self._retrieved_at + self.REFRESH_INTERVAL < time.time():
+            # Info is stale, need to refresh
+            new_info = h2o.api("GET /3/Cloud")
+            self._fill_from_h2ocluster(new_info)    
+        keys = ["h2o", "healthy", "last_ping", "num_cpus", "sys_load", "mem_value_size", "free_mem", "pojo_mem",
+                "swap_mem", "free_disk", "max_disk", "pid", "num_keys", "tcps_active", "open_fds", "rpcs_active"]
+        node_table = [[] for k in self.nodes]
+        for j, node in enumerate(self.nodes):
+            node_table[j].append("Node %d" % (j + 1))
+            for i, k in enumerate(keys):
+                node_table[j].append(node[k])
+        keys.insert(0,"node")       
+        table = H2OTwoDimTable(cell_values=node_table, col_header=keys, row_header=keys)
         return table
 
     def network_test(self):
