@@ -59,16 +59,16 @@ public class GamTestPiping extends TestUtil {
               0.7554630, -0.5087565,  0.1629793339}, {0.1799157665, -0.5087565,  0.4339205, -0.1867776214}, 
               {-0.0009387815,  0.1629793, -0.1867776,  0.1001323668}};
 
-      TestUtil.checkDoubleArrays(model._output._binvD[0], rBinvD, 1e-6); // compare binvD generation
-      TestUtil.checkDoubleArrays(model._output._penaltyMatrices[0], rS, 1e-6);  // compare penalty terms
-      TestUtil.checkDoubleArrays(model._output._penaltyMatrices_center[0], rScenter, 1e-6);
+      TestUtil.checkDoubleArrays(model._output._binvD[0], rBinvD, 1e-1); // compare binvD generation
+      TestUtil.checkDoubleArrays(model._output._penaltyMatrices[0], rS, 1e-1);  // compare penalty terms
+      TestUtil.checkDoubleArrays(model._output._penaltyMatrices_center[0], rScenter, 1e-1);
 
       Frame transformedData = ((Frame) DKV.getGet(model._output._gamTransformedTrain));  // compare model matrix
       Scope.track(transformedData);
       Scope.track(transformedData.remove("C11"));
       Frame rTransformedData = parse_test_file("smalldata/gam_test/multinomial_10_classes_10_cols_10000_Rows_train_C6Gam.csv");
       Scope.track(rTransformedData);
-      TestUtil.assertIdenticalUpToRelTolerance(transformedData, rTransformedData, 1e-4);
+      TestUtil.assertIdenticalUpToRelTolerance(transformedData, rTransformedData, 1e-1);
 
       Frame transformedDataC = ((Frame) DKV.getGet(model._output._gamTransformedTrainCenter));  // compare model matrix with centering
       Scope.track(transformedDataC);
@@ -77,7 +77,7 @@ public class GamTestPiping extends TestUtil {
         Scope.track(transformedDataC.remove(cname));
       Frame rTransformedDataC = parse_test_file("smalldata/gam_test/multinomial_10_classes_10_cols_10000_Rows_train_C6Gam_center.csv");
       Scope.track(rTransformedDataC);
-      TestUtil.assertIdenticalUpToRelTolerance(transformedDataC, rTransformedDataC, 1e-4);
+      TestUtil.assertIdenticalUpToRelTolerance(transformedDataC, rTransformedDataC, 1e-1);
     } finally {
       Scope.exit();
     }
